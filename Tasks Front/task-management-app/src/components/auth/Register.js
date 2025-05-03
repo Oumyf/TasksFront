@@ -22,8 +22,12 @@ const Register = () => {
   const navigate = useNavigate();
 
   const validationSchema = Yup.object({
-    firstName: Yup.string().required('Prénom requis'),
-    lastName: Yup.string().required('Nom requis'),
+    fullName: Yup.string().required('Prénom requis'),
+    phone: Yup.string()
+        .required('Numéro de téléphone requis')
+        .min(8, 'Numéro trop court') // selon les besoins
+        .max(15, 'Numéro trop long'),
+
     email: Yup.string().email('Email invalide').required('Email requis'),
     password: Yup.string()
       .min(6, 'Le mot de passe doit contenir au moins 6 caractères')
@@ -35,10 +39,11 @@ const Register = () => {
 
   const formik = useFormik({
     initialValues: {
-      firstName: '',
-      lastName: '',
+      fullName: '',
       email: '',
-      password: '',
+      phone: '', 
+
+    password: '',
       confirmPassword: ''
     },
     validationSchema: validationSchema,
@@ -76,32 +81,19 @@ const Register = () => {
               <Grid item xs={12} sm={6}>
                 <TextField
                   autoComplete="given-name"
-                  name="firstName"
+                  name="fullName"
                   required
                   fullWidth
-                  id="firstName"
-                  label="Prénom"
+                  id="fullName"
+                  label="Nom complet"
                   autoFocus
-                  value={formik.values.firstName}
+                  value={formik.values.fullName}
                   onChange={formik.handleChange}
-                  error={formik.touched.firstName && Boolean(formik.errors.firstName)}
-                  helperText={formik.touched.firstName && formik.errors.firstName}
+                  error={formik.touched.fullName && Boolean(formik.errors.fullName)}
+                  helperText={formik.touched.fullName && formik.errors.fullName}
                 />
               </Grid>
-              <Grid item xs={12} sm={6}>
-                <TextField
-                  required
-                  fullWidth
-                  id="lastName"
-                  label="Nom"
-                  name="lastName"
-                  autoComplete="family-name"
-                  value={formik.values.lastName}
-                  onChange={formik.handleChange}
-                  error={formik.touched.lastName && Boolean(formik.errors.lastName)}
-                  helperText={formik.touched.lastName && formik.errors.lastName}
-                />
-              </Grid>
+              
               <Grid item xs={12}>
                 <TextField
                   required
@@ -114,6 +106,20 @@ const Register = () => {
                   onChange={formik.handleChange}
                   error={formik.touched.email && Boolean(formik.errors.email)}
                   helperText={formik.touched.email && formik.errors.email}
+                />
+              </Grid>
+              <Grid item xs={12}>
+                <TextField
+                  required
+                  fullWidth
+                  id="phone"
+                  label="Numéro de Téléphone"
+                  name="phone"
+                  autoComplete="phone"
+                  value={formik.values.phone}
+                  onChange={formik.handleChange}
+                  error={formik.touched.phone && Boolean(formik.errors.phone)}
+                  helperText={formik.touched.phone && formik.errors.phone} defaultValue="+221"
                 />
               </Grid>
               <Grid item xs={12}>

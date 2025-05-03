@@ -174,7 +174,7 @@ const TaskList = () => {
                   </Typography>
                   <Typography variant="body2" color="text.secondary">
                     <strong>Assigné à:</strong> {task.assignedTo 
-                      ? `${task.assignedTo.firstName} ${task.assignedTo.lastName}` 
+                      ? `${task.assignedTo.fullName} ` 
                       : 'Non assigné'}
                   </Typography>
                 </CardContent>

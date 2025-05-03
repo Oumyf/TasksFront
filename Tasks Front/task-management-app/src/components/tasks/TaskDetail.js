@@ -195,10 +195,10 @@ const TaskDetail = () => {
             {task.assignedTo ? (
               <Box sx={{ display: 'flex', alignItems: 'center' }}>
                 <Avatar sx={{ mr: 2 }}>
-                  {task.assignedTo.firstName.charAt(0)}
+                  {task.assignedTo.fullName.charAt(0)}
                 </Avatar>
                 <Typography>
-                  {task.assignedTo.firstName} {task.assignedTo.lastName}
+                  {task.assignedTo.fullName} 
                 </Typography>
               </Box>
             ) : (

@@ -70,7 +70,7 @@ const Header = () => {
                   color="inherit"
                 >
                   <Avatar sx={{ width: 32, height: 32, bgcolor: 'secondary.main' }}>
-                    {currentUser.firstName ? currentUser.firstName.charAt(0) : <AccountCircle />}
+                    {currentUser.fullName ? currentUser.fullName.charAt(0) : <AccountCircle />}
                   </Avatar>
                 </IconButton>
                 <Menu
@@ -89,7 +89,7 @@ const Header = () => {
                   onClose={handleClose}
                 >
                   <MenuItem onClick={handleClose}>
-                    {currentUser.firstName} {currentUser.lastName}
+                    {currentUser.fullName} 
                   </MenuItem>
                   <MenuItem onClick={handleLogout}>Déconnexion</MenuItem>
                 </Menu>

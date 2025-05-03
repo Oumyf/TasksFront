@@ -116,7 +116,7 @@ const TaskAssign = () => {
               </MenuItem>
               {users.map((user) => (
                 <MenuItem key={user._id} value={user._id}>
-                  {user.firstName} {user.lastName}
+                  {user.fullName} 
                 </MenuItem>
               ))}
             </Select>
