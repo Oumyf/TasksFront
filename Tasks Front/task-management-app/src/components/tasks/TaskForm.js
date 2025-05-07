@@ -1,9 +1,9 @@
-// Imports toujours les mêmes...
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
 import taskService from '../../services/taskService';
+import taskGroupService from '../../services/taskGroupService'; // Supposons que vous avez ce service
 import {
   Box, Button, Container, TextField, Typography, Alert,
   Paper, Grid, FormControl, InputLabel, Select, MenuItem,
@@ -16,6 +16,8 @@ const TaskForm = () => {
   const isEditMode = Boolean(taskId);
   const [loading, setLoading] = useState(isEditMode);
   const [error, setError] = useState('');
+  const [taskGroups, setTaskGroups] = useState([]);
+  const [parentTasks, setParentTasks] = useState([]);
   const navigate = useNavigate();
 
   const validationSchema = Yup.object({
@@ -41,10 +43,10 @@ const TaskForm = () => {
       couleur: '#1976d2', // couleur par défaut (bleu)
       parentId: '',
       taskGroupId: '',
-      createdBy: '' // à auto-remplir si tu as un user connecté
     },
     validationSchema,
     onSubmit: async (values) => {
+      console.log('Formulaire soumis avec les valeurs :', values); // <-- Ajoutez ceci
       try {
         const mappedValues = {
           name: values.title,
@@ -57,7 +59,7 @@ const TaskForm = () => {
           couleur: values.couleur,
           parentId: values.parentId || null,
           taskGroupId: values.taskGroupId || null,
-          createdBy: values.createdBy || null
+          // createdBy est supprimé car il sera défini automatiquement par le backend
         };
 
         if (isEditMode) {
@@ -74,24 +76,57 @@ const TaskForm = () => {
     }
   });
 
+  // Charger les groupes de tâches
+  useEffect(() => {
+    const fetchTaskGroups = async () => {
+      try {
+        const response = await taskGroupService.getAllTaskGroups();
+        if (response && response.status === 'success') {
+          setTaskGroups(response.taskGroups || []);
+        }
+      } catch (err) {
+        console.error('Erreur de chargement des groupes de tâches:', err);
+      }
+    };
+
+    const fetchParentTasks = async () => {
+      try {
+        const response = await taskService.getAllTasks();
+        if (response && response.status === 'success') {
+          // Filtrer pour éviter que la tâche actuelle apparaisse comme parent possible
+          const filteredTasks = response.tasks.filter(task => !isEditMode || task.id !== taskId);
+          setParentTasks(filteredTasks || []);
+        }
+      } catch (err) {
+        console.error('Erreur de chargement des tâches parentes potentielles:', err);
+      }
+    };
+
+    fetchTaskGroups();
+    fetchParentTasks();
+  }, [isEditMode, taskId]);
+
   useEffect(() => {
     if (isEditMode) {
       const fetchTask = async () => {
         try {
-          const taskData = await taskService.getTaskById(taskId);
-          formik.setValues({
-            title: taskData.name,
-            description: taskData.description || '',
-            dueDate: taskData.dateDebut?.split('T')[0] || '',
-            endDate: taskData.dateFin?.split('T')[0] || '',
-            priority: taskData.priorite?.toUpperCase() || 'MEDIUM',
-            status: taskData.status?.toUpperCase() || 'PENDING',
-            progression: taskData.progression || 0,
-            couleur: taskData.couleur || '#1976d2',
-            parentId: taskData.parentId || '',
-            taskGroupId: taskData.taskGroupId || '',
-            createdBy: taskData.createdBy || ''
-          });
+          const response = await taskService.getTaskById(taskId);
+          if (response && response.status === 'success') {
+            const taskData = response.task || response;
+            formik.setValues({
+              title: taskData.name,
+              description: taskData.description || '',
+              dueDate: taskData.dateDebut?.split('T')[0] || '',
+              endDate: taskData.dateFin?.split('T')[0] || '',
+              priority: taskData.priorite?.toUpperCase() || 'MEDIUM',
+              status: taskData.status?.toUpperCase() || 'PENDING',
+              progression: taskData.progression || 0,
+              couleur: taskData.couleur || '#1976d2',
+              parentId: taskData.parentId || '',
+              taskGroupId: taskData.taskGroupId || '',
+              // createdBy n'est plus nécessaire
+            });
+          }
         } catch (err) {
           setError('Impossible de charger la tâche');
         } finally {
@@ -100,6 +135,8 @@ const TaskForm = () => {
       };
 
       fetchTask();
+    } else {
+      setLoading(false);
     }
   }, [isEditMode, taskId]);
 
@@ -205,31 +242,63 @@ const TaskForm = () => {
             </Grid>
 
             <Grid item xs={6}>
-              <TextField fullWidth id="parentId" name="parentId" label="ID de la tâche parente"
-                value={formik.values.parentId} onChange={formik.handleChange} />
+              <FormControl fullWidth>
+                <InputLabel id="parent-task-label">Tâche parente</InputLabel>
+                <Select
+                  labelId="parent-task-label"
+                  id="parentId"
+                  name="parentId"
+                  value={formik.values.parentId}
+                  label="Tâche parente"
+                  onChange={formik.handleChange}
+                  >
+                    <MenuItem value="">Aucune</MenuItem>
+                    {parentTasks.map(task => (
+                      <MenuItem key={task.id} value={task.id}>
+                        {task.name}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+              </Grid>
+  
+              <Grid item xs={6}>
+                <FormControl fullWidth>
+                  <InputLabel id="task-group-label">Groupe de tâches</InputLabel>
+                  <Select
+                    labelId="task-group-label"
+                    id="taskGroupId"
+                    name="taskGroupId"
+                    value={formik.values.taskGroupId}
+                    label="Groupe de tâches"
+                    onChange={formik.handleChange}
+                  >
+                    <MenuItem value="">Aucun</MenuItem>
+                    {taskGroups.map(group => (
+                      <MenuItem key={group.id} value={group.id}>
+                        {group.name}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+              </Grid>
+  
+              <Grid item xs={12} sx={{ display: 'flex', justifyContent: 'flex-end' }}>
+                <Button
+                  variant="contained"
+                  color="primary"
+                  startIcon={<SaveIcon />}
+                  type="submit"
+                >
+                  {isEditMode ? 'Mettre à jour' : 'Créer'}
+                </Button>
+              </Grid>
             </Grid>
-
-            <Grid item xs={6}>
-              <TextField fullWidth id="taskGroupId" name="taskGroupId" label="ID du groupe"
-                value={formik.values.taskGroupId} onChange={formik.handleChange} />
-            </Grid>
-
-            <Grid item xs={12}>
-              <TextField fullWidth id="createdBy" name="createdBy" label="Créé par (ID)"
-                value={formik.values.createdBy} onChange={formik.handleChange} />
-            </Grid>
-
-            <Grid item xs={12}>
-              <Button type="submit" variant="contained" startIcon={<SaveIcon />} sx={{ mt: 2 }}>
-                {isEditMode ? 'Mettre à jour' : 'Créer'}
-              </Button>
-            </Grid>
-          </Grid>
-        </Box>
-      </Paper>
-    </Container>
-  );
-};
-
-export default TaskForm;
- 
+          </Box>
+        </Paper>
+      </Container>
+    );
+  };
+  
+  export default TaskForm;
+  

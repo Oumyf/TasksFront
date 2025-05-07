@@ -83,8 +83,8 @@ const TaskList = () => {
         if (!taskToDelete) return;
 
         try {
-            await taskService.deleteTask(taskToDelete._id);
-            setTasks(prev => prev.filter(t => t._id !== taskToDelete._id));
+            await taskService.deleteTask(taskToDelete.id);
+            setTasks(prev => prev.filter(t => t.id !== taskToDelete.id));
             setDeleteDialogOpen(false);
             setTaskToDelete(null);
         } catch (err) {
@@ -97,7 +97,7 @@ const TaskList = () => {
         try {
             const updatedTask = await taskService.completeTask(taskId);
             setTasks(prev =>
-                prev.map(task => task._id === taskId ? updatedTask : task)
+                prev.map(task => task.id === taskId ? updatedTask : task)
             );
         } catch (err) {
             console.error('Erreur lors de la mise à jour de la tâche:', err);
@@ -134,11 +134,11 @@ const TaskList = () => {
             ) : (
                 <Grid container spacing={3}>
                     {tasks.map(task => (
-                        <Grid item xs={12} sm={6} md={4} key={task._id}>
+                        <Grid item xs={12} sm={6} md={4} key={task.id}>
                             <Card sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
                                 <CardContent sx={{ flexGrow: 1 }}>
                                     <Typography variant="h6" gutterBottom>
-                                        {task.title}
+                                        {task.name}
                                     </Typography>
                                     <Chip
                                         label={task.status}
@@ -153,7 +153,7 @@ const TaskList = () => {
                                     </Typography>
                                     <Typography variant="body2">
                                         <strong>Date d'échéance :</strong>{' '}
-                                        {new Date(task.dueDate).toLocaleDateString('fr-FR')}
+                                        {new Date(task.dateFin).toLocaleDateString('fr-FR')}
                                     </Typography>
                                     <Typography variant="body2">
                                         <strong>Assigné à :</strong>{' '}
@@ -161,8 +161,8 @@ const TaskList = () => {
                                     </Typography>
                                 </CardContent>
                                 <CardActions>
-                                    <Button size="small" onClick={() => handleViewTask(task._id)}>Voir</Button>
-                                    <IconButton size="small" color="primary" onClick={() => handleEditTask(task._id)}>
+                                    <Button size="small" onClick={() => handleViewTask(task.id)}>Voir</Button>
+                                    <IconButton size="small" color="primary" onClick={() => handleEditTask(task.id)}>
                                         <EditIcon />
                                     </IconButton>
                                     <IconButton size="small" color="error" onClick={() => handleDeleteDialog(task)}>
@@ -170,10 +170,10 @@ const TaskList = () => {
                                     </IconButton>
                                     {task.status !== 'COMPLETED' && (
                                         <>
-                                            <IconButton size="small" color="success" onClick={() => handleCompleteTask(task._id)}>
+                                            <IconButton size="small" color="success" onClick={() => handleCompleteTask(task.id)}>
                                                 <CheckCircleIcon />
                                             </IconButton>
-                                            <IconButton size="small" color="info" onClick={() => handleAssignTask(task._id)}>
+                                            <IconButton size="small" color="info" onClick={() => handleAssignTask(task.id)}>
                                                 <AssignmentIcon />
                                             </IconButton>
                                         </>

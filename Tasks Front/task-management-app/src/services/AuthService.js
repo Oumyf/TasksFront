@@ -24,13 +24,13 @@ axiosInstance.interceptors.request.use(
 const authService = {
   // Connexion utilisateur
   login: async (credentials) => {
-    const response = await axios.post(`${API_URL}/auth/login`, credentials);
+    const response = await axios.post(`${API_URL}/auth/loginWithToken`, credentials);
     return response.data;
   },
 
   // Inscription utilisateur
   register: async (userData) => {
-    const response = await axios.post(`${API_URL}/auth/register`, userData);
+    const response = await axios.post(`${API_URL}/auth/registerWithToken`, userData);
     return response.data;
   },
 
